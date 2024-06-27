@@ -1,0 +1,430 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <!-- Bootstrap CSS -->
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
+  
+  <!-- Font Awesome for icons -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  
+  <!-- Custom CSS -->
+  <style>
+    body {
+      background-color: #142344;
+    }
+    h1, h2, h3, h4, h5, h6 {
+  color: #FFFFFF; /* Slightly darker gray for headings */
+}
+    .container {
+      max-width: 1500px;
+    }
+    .process-steps {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      width: 100%;
+      margin: 20px 0;
+      position: relative;
+      padding: 0.1em 5.9em;
+    }
+    .process-steps::before {
+      content: '';
+      position: absolute;
+      top: 50%;
+      left: 0;
+      right: 0;
+      height: 2px;
+      background-color: #ccc;
+      z-index: 1;
+    }
+    .process-step {
+      width: 40px;
+      height: 40px;
+      border: 2px solid #ccc;
+      border-radius: 50%;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      font-weight: bold;
+      font-size: 16px;
+      color: #ccc;
+      background-color: #fff;
+      position: relative;
+      z-index: 2;
+    }
+    .process-step::after {
+      content: attr(data-title);
+      position: absolute;
+      bottom: -25px;
+      left: 50%;
+      transform: translateX(-50%);
+      font-size: 12px;
+      white-space: nowrap;
+      color: #6c757d;
+      width: 100px;
+      text-align: center;
+    }
+    .completed {
+      background-color: #28a745;
+      color: #fff;
+      border-color: #28a745;
+    }
+    .current {
+      background-color: #007bff;
+      color: #fff;
+      border-color: #007bff;
+    }
+    .status-badge {
+      font-size: 0.8rem;
+      padding: 0.25em 0.6em;
+    }
+    .employee-block {
+      margin-bottom: 20px;
+      border: 1px solid #dee2e6;
+      border-radius: 0.25rem;
+      overflow: hidden;
+    }
+    .employee-info {
+      background-color: #fff;
+    }
+    .employee-steps {
+      background-color: #f1f3f5;
+      padding: 15px;
+    }
+    .filter-bar {
+      background-color: #e9ecef;
+      padding: 15px;
+      margin-bottom: 20px;
+      border-radius: 0.25rem;
+    }
+    .skills-list {
+      list-style-type: none;
+      padding-left: 0;
+    }
+    .skills-list li {
+      display: inline-block;
+      background-color: #e9ecef;
+      padding: 0.2em 0.6em;
+      margin: 0.1em;
+      border-radius: 0.25rem;
+      font-size: 0.8rem;
+    }
+    .skill-filter {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 5px;
+      margin-top: 10px;
+    }
+    .skill-filter-item {
+      background-color: #e9ecef;
+      border: 1px solid #ced4da;
+      border-radius: 20px;
+      padding: 5px 10px;
+      font-size: 0.8rem;
+      cursor: pointer;
+      transition: background-color 0.3s;
+    }
+    .skill-filter-item.active {
+      background-color: #007bff;
+      color: white;
+    }
+  </style>
+</head>
+<body>
+  <div class="container mt-5">
+    <h1 class="mb-4">Employee Onboarding Progress</h1>
+    
+    <div class="filter-bar">
+      <div class="row g-3">
+        <div class="col-md-3">
+<input type="text" class="form-control" id="search-input" placeholder="Search by name, email, position, or phone...">
+        </div>
+        <div class="col-md-3">
+          <select class="form-select" id="status-filter">
+            <option value="">All Statuses</option>
+            <option value="Hired">Hired</option>
+            <option value="Pending">Pending</option>
+            <option value="Rejected">Rejected</option>
+          </select>
+        </div>
+        <div class="col-md-3">
+          <select class="form-select" id="position-filter">
+            <option value="">All Positions</option>
+          </select>
+        </div>
+        <div class="col-md-3">
+          <select class="form-select" id="sort-by">
+            <option value="name">Sort by Name</option>
+            <option value="status">Sort by Status</option>
+            <option value="position">Sort by Position</option>
+          </select>
+        </div>
+      </div>
+      <div class="skill-filter mt-3" id="skill-filter">
+        <!-- Skill filter items will be dynamically added here -->
+      </div>
+    </div>
+
+    <div id="employee-list">
+      <!-- Employee blocks will be dynamically added here -->
+    </div>
+  </div>
+
+  <!-- Bootstrap JS and Popper.js -->
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+
+  <script>
+    document.addEventListener('DOMContentLoaded', function() {
+      const employees = [
+  {
+    "id": 1,
+    "name": "John Doe",
+    "email": "john.doe@company.com",
+    "position": "Software Engineer",
+    "status": "Hired",
+    "phone": "+1 (555) 123-4567",
+    "sub_status": "Training and Orientation",
+    "started_date": "2023-06-01",
+    "salary": 80000,
+    "skills": [
+      "JavaScript",
+      "React",
+      "Node.js"
+    ]
+  },
+  {
+    "id": 2,
+    "name": "Jane Smith",
+    "email": "jane.smith@company.com",
+    "position": "Marketing Manager",
+    "status": "Pending",
+    "sub_status": "Final Interview",
+    "started_date": null,
+    "salary": null,
+    "skills": [
+      "Digital Marketing",
+      "SEO",
+      "Content Strategy"
+    ]
+  },
+  {
+    "id": 3,
+    "name": "Mike Johnson",
+    "email": "mike.johnson@company.com",
+    "position": "Data Analyst",
+    "status": "Hired",
+    "sub_status": "Set Up Workspace and Equipment",
+    "started_date": "2023-05-15",
+    "salary": 75000,
+    "skills": [
+      "Python",
+      "SQL",
+      "Data Visualization"
+    ]
+  },
+  {
+    "id": 4,
+    "name": "Emily Brown",
+    "email": "emily.brown@company.com",
+    "position": "UX Designer",
+    "status": "Rejected",
+    "sub_status": "Rejection Notice",
+    "started_date": null,
+    "salary": null,
+    "skills": [
+      "User Research",
+      "Wireframing",
+      "Prototyping"
+    ]
+  },
+  {
+    "id": 5,
+    "name": "Alex Chen",
+    "email": "alex.chen@company.com",
+    "position": "DevOps Engineer",
+    "status": "Hired",
+    "sub_status": "Introduce Company Culture",
+    "started_date": "2023-06-15",
+    "salary": 90000,
+    "skills": [
+      "Docker",
+      "Kubernetes",
+      "CI/CD"
+    ]
+  }
+];
+
+        const employeeList = document.getElementById('employee-list');
+      const searchInput = document.getElementById('search-input');
+      const statusFilter = document.getElementById('status-filter');
+      const positionFilter = document.getElementById('position-filter');
+      const sortBy = document.getElementById('sort-by');
+      const skillFilter = document.getElementById('skill-filter');
+
+      const onboardingSteps = {
+        hired: [
+          "Welcome and Introduction",
+          "Provide Necessary Documentation",
+          "Set Up Workspace and Equipment",
+          "Training and Orientation",
+          "Introduce Company Culture",
+          "Assign a Mentor or Buddy",
+          "Feedback and Check-ins"
+        ],
+        pending: [
+          "Application Review",
+          "Initial Interview",
+          "Technical Assessment",
+          "Final Interview",
+          "Reference Check"
+        ],
+        rejected: [
+          "Application Review",
+          "Rejection Notice",
+          "Feedback Provided"
+        ],
+        cancelled: [
+          "Application Submitted",
+          "Cancellation Request",
+          "Cancellation Processed"
+        ]
+      };
+
+      function getStatusBadgeClass(status) {
+        switch (status.toLowerCase()) {
+          case 'hired':
+            return 'bg-success';
+          case 'pending':
+            return 'bg-warning text-dark';
+          case 'rejected':
+            return 'bg-danger';
+          case 'cancelled':
+            return 'bg-secondary';
+          default:
+            return 'bg-info';
+        }
+      }
+
+      function renderEmployees(filteredEmployees) {
+        employeeList.innerHTML = '';
+        filteredEmployees.forEach(employee => {
+          const status = employee.status.toLowerCase();
+          const steps = onboardingSteps[status] || [];
+          const currentStepIndex = steps.indexOf(employee.sub_status);
+          
+          const progressSteps = steps.map((step, index) => `
+            <div class="process-step ${index < currentStepIndex ? 'completed' : ''} ${index === currentStepIndex ? 'current' : ''}"
+                 data-title="${step.split(' ').slice(0, 2).join(' ')}">
+              ${index < currentStepIndex ? '<i class="fas fa-check"></i>' : index + 1}
+            </div>
+          `).join('');
+
+ const employeeBlock = `
+            <div class="employee-block">
+              <div class="employee-info p-3">
+                <div class="row">
+                  <div class="col-md-3"><strong>Name:</strong> ${employee.name}</div>
+                  <div class="col-md-3"><strong>Email:</strong> ${employee.email}</div>
+                  <div class="col-md-3"><strong>Phone:</strong> ${employee.phone}</div>
+                  <div class="col-md-3"><strong>Position:</strong> ${employee.position}</div>
+                </div>
+                <div class="row mt-2">
+                  <div class="col-md-3">
+                    <strong>Status:</strong> 
+                    <span class="badge ${getStatusBadgeClass(employee.status)} status-badge">${employee.status}</span>
+                  </div>
+                  <div class="col-md-3"><strong>Started Date:</strong> ${employee.started_date || 'N/A'}</div>
+                  <div class="col-md-3"><strong>Salary:</strong> ${employee.salary ? '$' + employee.salary.toLocaleString() : 'N/A'}</div>
+                  <div class="col-md-3">
+                    <strong>Skills:</strong>
+                    <ul class="skills-list">
+                      ${employee.skills ? employee.skills.map(skill => `<li>${skill}</li>`).join('') : 'N/A'}
+                    </ul>
+                  </div>
+                </div>
+                <div class="row mt-2">
+                  <div class="col-12">
+                    <strong>Current Step:</strong> ${employee.sub_status || 'N/A'}
+                  </div>
+                </div>
+              </div>
+              <div class="employee-steps">
+                <div class="process-steps">${progressSteps}</div>
+              </div>
+            </div>
+          `;
+
+          employeeList.insertAdjacentHTML('beforeend', employeeBlock);
+        });
+      }
+
+          function filterAndSortEmployees() {
+        let filteredEmployees = employees.filter(employee => {
+          const searchTerm = searchInput.value.toLowerCase();
+          const statusMatch = statusFilter.value === '' || employee.status === statusFilter.value;
+          const positionMatch = positionFilter.value === '' || employee.position === positionFilter.value;
+          const searchMatch = employee.name.toLowerCase().includes(searchTerm) ||
+                              employee.email.toLowerCase().includes(searchTerm) ||
+                              employee.position.toLowerCase().includes(searchTerm) ||
+                              employee.phone.toLowerCase().includes(searchTerm);
+          
+          // Skill filter
+        const activeSkills = Array.from(skillFilter.querySelectorAll('.active')).map(el => el.textContent);
+        const skillMatch = activeSkills.length === 0 || employee.skills.some(skill => activeSkills.includes(skill));
+
+        return statusMatch && positionMatch && searchMatch && skillMatch;
+      });
+
+        filteredEmployees.sort((a, b) => {
+          switch (sortBy.value) {
+            case 'name':
+              return a.name.localeCompare(b.name);
+            case 'status':
+              return a.status.localeCompare(b.status);
+            case 'position':
+              return a.position.localeCompare(b.position);
+            default:
+              return 0;
+          }
+        });
+
+        renderEmployees(filteredEmployees);
+      }
+
+      // Populate position filter options
+      const positions = [...new Set(employees.map(e => e.position))];
+      positions.forEach(position => {
+        const option = document.createElement('option');
+        option.value = position;
+        option.textContent = position;
+        positionFilter.appendChild(option);
+      });
+
+      // Populate skill filter options
+      const allSkills = [...new Set(employees.flatMap(e => e.skills))];
+      allSkills.forEach(skill => {
+        const skillItem = document.createElement('span');
+        skillItem.className = 'skill-filter-item';
+        skillItem.textContent = skill;
+        skillItem.addEventListener('click', () => {
+          skillItem.classList.toggle('active');
+          filterAndSortEmployees();
+        });
+        skillFilter.appendChild(skillItem);
+      });
+
+      // Add event listeners
+      searchInput.addEventListener('input', filterAndSortEmployees);
+      statusFilter.addEventListener('change', filterAndSortEmployees);
+      positionFilter.addEventListener('change', filterAndSortEmployees);
+      sortBy.addEventListener('change', filterAndSortEmployees);
+
+      // Initial render
+      filterAndSortEmployees();
+    });
+  </script>
+</body>
+</html>
